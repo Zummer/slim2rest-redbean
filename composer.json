@@ -1,0 +1,7 @@
+{
+    "require": {
+        "slim/slim": "2.*",
+        "gabordemooij/redbean" : "v4.3.1",
+        "palanik/corsslim": "*"
+    }
+}

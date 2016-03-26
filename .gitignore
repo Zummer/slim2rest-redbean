@@ -1,0 +1,6 @@
+tests
+access.log
+error.log
+.idea
+db.php
+vendor
