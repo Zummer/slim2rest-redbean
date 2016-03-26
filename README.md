@@ -6,8 +6,8 @@ A small CRUD application using Slim PHP framework
 
 composer install
 
+<div class="highlight">
 <pre>
-<code>
 {
     "require": {
         "slim/slim": "2.*",
@@ -15,8 +15,8 @@ composer install
         "palanik/corsslim": "*"
     }
 }
-</code>
 </pre>
+</div>
 
 Demo resources
 http://rest1.plottex.ru/items
