@@ -151,7 +151,7 @@ $app->get($cR->url,
                 'totalPages' => $totalPages
             ];
             $app->response->header('Content-Type', 'application/json');
-            $app->response->write(json_encode($exportArray, JSON_UNESCAPED_UNICODE));
+            $app->response->write(json_encode($exportArray, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         } catch (PDOException $e) {
             echo '{"error":{"text":' . $e->getMessage() . '}}';
         }
@@ -169,7 +169,8 @@ $app->get($cR->url . '/:id',
                 $exportArray = R::exportAll($item);
                 $app->response->header('Content-Type', 'application/json');
                 // в нашем случае нам нужен лишь один объект [0]
-                $app->response->write(json_encode($exportArray[0], JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE));
+                $app->response->write(json_encode($exportArray[0],
+                    JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
             } else {
                 // else throw exception
                 throw new ResourceNotFoundException();
@@ -228,64 +229,64 @@ $app->post($cR->url . '/:id' . '/:action',
     $corsRoute,
     function ($id, $action) use ($app, $cR) {
 
-    $limit = 0;
-    $page = 0;
+        $limit = 0;
+        $page = 0;
 
-    if (isset($_GET["limit"])) {
-        $limit = $app->request->get('limit');
-        settype($limit, 'integer');
-    } else {
-        $limit = 10;
-    }
-    if (isset($_GET["page"])) {
-        $page = $app->request->get('page');
-        settype($page, 'integer');
-    } else {
-        $page = 1;
-    }
-
-    try {
-        // query database for item
-        $item = R::findOne($cR->name, 'id=?', array($id));
-
-        // delete item
-        if ($item && $action == 'delete') {
-            foreach ($item->ownAddress as $itemAdr) {
-                R::trash($itemAdr);
-            }
-            R::trash($item);
-            $totalItems = R::count($cR->name);
-            $totalPages = ceil($totalItems / $limit);
-
-            if ($page > $totalPages) {
-                $page = $totalPages;
-            }
-
-            // ответ должен прийти со страницей
-            $items = R::find($cR->name, 'LIMIT :start, :limit ', [
-                ':start' => (($page - 1) * $limit),
-                ':limit' => $limit
-            ]);
-
-            // return JSON-encoded response body with query results
-            $exportArray['items'] = R::exportAll($items);
-            $exportArray['pagination'] = [
-                'page' => $page,
-                'limit' => $limit,
-                'totalItems' => $totalItems,
-                'totalPages' => $totalPages
-            ];
-            $app->response->header('Content-Type', 'application/json');
-            $app->response->write(json_encode($exportArray, JSON_UNESCAPED_UNICODE));
+        if (isset($_GET["limit"])) {
+            $limit = $app->request->get('limit');
+            settype($limit, 'integer');
         } else {
-            throw new ResourceNotFoundException();
+            $limit = 10;
         }
-    } catch (ResourceNotFoundException $e) {
-        $app->response->status(404);
-    } catch (Exception $e) {
-        $app->response->status(400);
-        $app->response->header('X-Status-Reason', $e->getMessage());
-    }
-});
+        if (isset($_GET["page"])) {
+            $page = $app->request->get('page');
+            settype($page, 'integer');
+        } else {
+            $page = 1;
+        }
+
+        try {
+            // query database for item
+            $item = R::findOne($cR->name, 'id=?', array($id));
+
+            // delete item
+            if ($item && $action == 'delete') {
+                foreach ($item->ownAddress as $itemAdr) {
+                    R::trash($itemAdr);
+                }
+                R::trash($item);
+                $totalItems = R::count($cR->name);
+                $totalPages = ceil($totalItems / $limit);
+
+                if ($page > $totalPages) {
+                    $page = $totalPages;
+                }
+
+                // ответ должен прийти со страницей
+                $items = R::find($cR->name, 'LIMIT :start, :limit ', [
+                    ':start' => (($page - 1) * $limit),
+                    ':limit' => $limit
+                ]);
+
+                // return JSON-encoded response body with query results
+                $exportArray['items'] = R::exportAll($items);
+                $exportArray['pagination'] = [
+                    'page' => $page,
+                    'limit' => $limit,
+                    'totalItems' => $totalItems,
+                    'totalPages' => $totalPages
+                ];
+                $app->response->header('Content-Type', 'application/json');
+                $app->response->write(json_encode($exportArray, JSON_UNESCAPED_UNICODE));
+            } else {
+                throw new ResourceNotFoundException();
+            }
+        } catch (ResourceNotFoundException $e) {
+            $app->response->status(404);
+        } catch (Exception $e) {
+            $app->response->status(400);
+            $app->response->header('X-Status-Reason', $e->getMessage());
+        }
+    });
 
 $app->run();
