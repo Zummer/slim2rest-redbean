@@ -1,4 +1,6 @@
-Angular-slim-redbean-rest
-A small CRUD application using AngularJS and Slim PHP framework.
+Slim2 RESTful application + RedbeanPHP ORM
+A small CRUD application using Slim PHP framework
 ======================
 
+Demo resources
+http://rest1.plottex.ru/items
